@@ -77,6 +77,7 @@ Frontend (port 3000)
 ### 1. Task Fetching & Normalization
 
 When the page loads:
+
 1. `initTasksFromCache` thunk loads the last saved tasks from **IndexedDB** instantly — users see data with zero network wait.
 2. `fetchTasks` thunk fires an Axios request to `GET /api/tasks` and the response is passed through `normalize.ts`.
 3. `normalize.ts` converts every `RawTask` into a typed `Task` domain model — handling mixed-case enums, numeric-as-string counts, and dual timestamp formats — so reducers and UI components never deal with raw backend quirks.
@@ -87,17 +88,18 @@ When the page loads:
 
 A persistent WebSocket connection (`ws://localhost:4000/ws`) is managed by the `useTaskFeed` hook:
 
-| Event               | What happens                                           |
-|---------------------|--------------------------------------------------------|
-| `task.updated`      | Patches `status` + `updatedAt` on the existing entity |
-| `task.assigned`     | Patches `assignee` on the existing entity              |
-| `annotation.created`| Increments `annotationCount` by 1                     |
+| Event                | What happens                                          |
+| -------------------- | ----------------------------------------------------- |
+| `task.updated`       | Patches `status` + `updatedAt` on the existing entity |
+| `task.assigned`      | Patches `assignee` on the existing entity             |
+| `annotation.created` | Increments `annotationCount` by 1                     |
 
 Events for unknown task IDs (tasks on other pages) are silently ignored. The hook reconnects automatically using **exponential backoff** (1s → 2s → 4s → max 30s).
 
 ### 3. Streaming AI Summaries (SSE)
 
 When a user selects a task and requests its summary:
+
 1. The `useStreamSummary` hook opens an `EventSource` to `GET /api/tasks/:id/summary`.
 2. The server streams the summary 2 words at a time every 80ms, ending with a `[DONE]` sentinel.
 3. The front-end accumulates the text and renders it through a safe markdown pipeline:
@@ -121,6 +123,7 @@ A `StaleIndicator` badge appears while `isStale === true` so users know data may
 ### 5. Client-Side Filtering & Sorting
 
 The `selectFilteredSortedTasks` memoized selector applies filters on the Redux entity map:
+
 - **Filter by type** (IMAGE, VIDEO, TEXT, UNKNOWN)
 - **Filter by status** (TODO, IN_PROGRESS, DONE, QA, BLOCKED, UNKNOWN)
 - **Search** by task title (case-insensitive substring match)
@@ -148,6 +151,7 @@ npm run dev
 The server starts on `http://localhost:4000`.
 
 Available endpoints:
+
 - `GET /api/tasks?page=1&pageSize=10` — paginated task list
 - `GET /api/tasks/:id/summary` — SSE streamed summary
 - `ws://localhost:4000/ws` — WebSocket live events
@@ -170,6 +174,7 @@ npm test
 ```
 
 Tests cover:
+
 - `normalize.test.ts` — all normalization edge cases (unknown types, mixed timestamps, non-numeric counts)
 - `selectors.test.ts` — filter, sort, and search selector logic
 - `TaskCard.test.tsx` — component rendering with React Testing Library
@@ -180,24 +185,24 @@ Tests cover:
 
 ### Frontend
 
-| Technology | Purpose |
-|---|---|
-| **Next.js 14** (App Router) | React framework & routing |
-| **Redux Toolkit** | State management (`createEntityAdapter`, `createAsyncThunk`) |
-| **React-Redux** | React bindings for Redux |
-| **Axios** | HTTP client |
-| **localforage** | IndexedDB wrapper for offline caching |
-| **react-markdown** + **rehype-sanitize** | Safe markdown rendering for SSE summaries |
-| **Tailwind CSS** | Utility-first styling |
-| **TypeScript** | Full type safety |
-| **Jest** + **React Testing Library** | Unit testing |
+| Technology                               | Purpose                                                      |
+| ---------------------------------------- | ------------------------------------------------------------ |
+| **Next.js 14** (App Router)              | React framework & routing                                    |
+| **Redux Toolkit**                        | State management (`createEntityAdapter`, `createAsyncThunk`) |
+| **React-Redux**                          | React bindings for Redux                                     |
+| **Axios**                                | HTTP client                                                  |
+| **localforage**                          | IndexedDB wrapper for offline caching                        |
+| **react-markdown** + **rehype-sanitize** | Safe markdown rendering for SSE summaries                    |
+| **Tailwind CSS**                         | Utility-first styling                                        |
+| **TypeScript**                           | Full type safety                                             |
+| **Jest** + **React Testing Library**     | Unit testing                                                 |
 
 ### Mock Server
 
-| Technology | Purpose |
-|---|---|
-| **Express** | REST API server |
-| **ws** | WebSocket server |
+| Technology                   | Purpose           |
+| ---------------------------- | ----------------- |
+| **Express**                  | REST API server   |
+| **ws**                       | WebSocket server  |
 | **TypeScript** + **ts-node** | Typed server code |
 
 ---
@@ -223,7 +228,3 @@ See [`frontend/DECISIONS.md`](./frontend/DECISIONS.md) for a detailed breakdown 
 - **No error boundary** — a React Error Boundary would prevent full-app crashes on unexpected component errors.
 
 ---
-
-## 📄 License
-
-MIT
